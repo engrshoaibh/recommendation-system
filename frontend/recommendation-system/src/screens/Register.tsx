@@ -1,9 +1,37 @@
-import React from "react";
+// src/components/Register.tsx
+import React, { useState } from "react";
+import { registerUser } from "./api";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent default form submission
+
+    try {
+      // Use the registerUser function from api.ts
+      const response = await registerUser(email, password);
+
+      // Handle success
+      if (response.success) {
+        setSuccess("Registration successful!");
+        const userId = response.userId;
+        navigate(`/preferences/${userId}`);
+      } else {
+        setError(response.message || "Registration failed");
+      }
+    } catch (error: any) {
+      setError(error.message || "An error occurred. Please try again.");
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center px-6 py-12 lg:px-8">
-      <div className="w-full max-w-xl space-y-8"> {/* Changed max-w-md to max-w-xl */}
+      <div className="w-full max-w-xl space-y-8">
         <div>
           <img
             alt="Your Company"
@@ -14,7 +42,7 @@ function Register() {
             Create Your New Account
           </h2>
         </div>
-        <form action="#" method="POST" className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label
               htmlFor="email"
@@ -29,6 +57,8 @@ function Register() {
                 type="email"
                 required
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -41,7 +71,6 @@ function Register() {
               >
                 Password
               </label>
-              
             </div>
             <div className="mt-2">
               <input
@@ -50,6 +79,8 @@ function Register() {
                 type="password"
                 required
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
             </div>
@@ -63,13 +94,15 @@ function Register() {
             </button>
           </div>
         </form>
+        {error && <p className="text-center text-red-500">{error}</p>}
+        {success && <p className="text-center text-green-500">{success}</p>}
         <p className="mt-10 text-center text-sm text-gray-500">
           Already have an Account?{" "}
           <a
             href="/signin"
             className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
           >
-           Login
+            Login
           </a>
         </p>
       </div>
