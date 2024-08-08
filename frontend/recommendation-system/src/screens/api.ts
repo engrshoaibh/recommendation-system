@@ -51,3 +51,21 @@ export const user_interests = async (userId: string, interests: string[]) => {
   }
 };
 
+export const getProducts = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/products`);
+    return response.data;
+  } catch (error) {
+    console.error('Error get the Products:', error);
+    throw error;
+  }
+};
+export const getRecommendedProducts = async (userId: number) => {
+  try {
+    const response = await axios.get(`${API_URL}/recommendations/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error get the Recommendations:', error);
+    throw error;
+  }
+};

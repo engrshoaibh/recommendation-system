@@ -1,6 +1,9 @@
 import React from 'react';
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import HeroSection from '../components/HeroSection';
+import Products from './Products';
+import RecommendProducts from '../components/RecommendProducts';
 
 const user = {
   name: 'Tom Cook',
@@ -27,6 +30,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Dashboard() {
+  const userId = 0;
   return (
     <div className="min-h-full">
       <Disclosure as="nav" className="bg-gray-800">
@@ -163,11 +167,15 @@ export default function Dashboard() {
 
       <header className="bg-white shadow">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Home</h1>
         </div>
       </header>
       <main>
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{/* Your content */}</div>
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <HeroSection/>
+          <Products/>
+          <RecommendProducts userId={userId} />
+        </div>
       </main>
     </div>
   );

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import mysql.connector
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
+from cosine_similarity import cosine_similarity
 app = Flask(__name__)
 CORS(app)
 bcrypt = Bcrypt(app)
@@ -108,6 +109,109 @@ def save_user_interests():
     except Exception as e:
         print(e)
         return jsonify({'success': False, 'message': 'Server error'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+        
+@app.route('/products', methods=['GET'])
+def get_products():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                p.product_id, 
+                p.name, 
+                p.description, 
+                p.price, 
+                p.image_url,
+                GROUP_CONCAT(i.interest_name) AS categories
+            FROM 
+                Products p
+            JOIN 
+                productinterests pi ON p.product_id = pi.product_id
+            JOIN 
+                interests i ON pi.interest_id = i.interest_id
+            GROUP BY 
+                p.product_id;
+        """)
+        products = cursor.fetchall()
+        return jsonify(products)
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'Server error'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/recommendations/<int:user_id>', methods=['GET'])
+def get_recommendations(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""SELECT interest_name FROM interests;""");
+        interests_list = cursor.fetchall()
+        
+        
+        # Convert to list of interest names
+        categories = [item['interest_name'] for item in interests_list]
+        print(categories)
+        # Get user interests by name
+        cursor.execute("""
+            SELECT i.interest_name 
+            FROM user_interests ui
+            JOIN interests i ON ui.interest_id = i.interest_id
+            WHERE ui.user_id = %s
+        """, (user_id,))
+        user_interests = [row['interest_name'] for row in cursor.fetchall()]
+        if not user_interests:
+            return jsonify({'message': 'No interests found for user'}), 404
+
+        # Convert user interests to a vector
+        user_vector = [1 if category in user_interests else 0 for category in categories]
+        print(user_vector);
+        # Fetch all products and their categories
+        cursor.execute("""
+            SELECT 
+                p.product_id, 
+                p.name, 
+                p.description, 
+                p.price, 
+                p.image_url,
+                GROUP_CONCAT(i.interest_name) AS categories
+            FROM 
+                Products p
+            JOIN 
+                productinterests pi ON p.product_id = pi.product_id
+            JOIN 
+                interests i ON pi.interest_id = i.interest_id
+            GROUP BY 
+                p.product_id;
+        """)
+        products = cursor.fetchall()
+
+        # Convert products' categories to vectors and calculate cosine similarity
+        product_scores = []
+        for product in products:
+            product_categories = product['categories'].split(',')
+            product_vector = [1 if category in product_categories else 0 for category in categories]
+            similarity = cosine_similarity(user_vector, product_vector)
+            print(similarity)
+            if similarity > 0:
+                product_scores.append((product, similarity))
+
+        # Sort products by similarity and get top 5
+        top_products = sorted(product_scores, key=lambda x: x[1], reverse=True)[:5]
+
+        # Extract only product data for response
+        top_products_data = [product for product, score in top_products]
+
+        return jsonify(top_products_data)
+    except Exception as e:
+        print(e)
+        return jsonify({'message': 'Server error'}), 500
     finally:
         cursor.close()
         conn.close()
