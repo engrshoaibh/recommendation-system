@@ -22,7 +22,7 @@ function Register() {
         const userId = response.userId;
         navigate(`/preferences/${userId}`);
       } else {
-        setError(response.message || "Registration failed");
+        setError(response.message || "egistration failed");
       }
     } catch (error: any) {
       setError(error.message || "An error occurred. Please try again.");
