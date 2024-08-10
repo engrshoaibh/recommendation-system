@@ -2,8 +2,11 @@
 import React, { useState } from "react";
 import { loginUser } from "../screens/api";
 import { useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { login } from "../features/user/userSlice";
 function SignIn() {
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,11 +24,15 @@ function SignIn() {
       if (response.message == "Login successful") {
         setSuccess("Sign in successful!");
         console.log("Response :", response);
+        dispatch(login({
+          id: response.userId,
+          email: email
+        }))
         if (response.fillPreferences == true) {
           const userId = response.userId;
           navigate(`/preferences/${userId}`);
         }else{
-          navigate(`/dashboard`);
+          navigate(`/home`);
         }
       } else {
         setError(response.message || "Sign in failed");

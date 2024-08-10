@@ -1,18 +1,36 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initalState = {
-    user:{id:1, email: ""}
+// Define the types for your state
+interface User {
+    id?: string;
+    email?: string;
 }
 
-export const todoSlice = createSlice ({
-    name: 'user',
-    initialState: initalState,
-    reducers: {
-        login: ()=>{
+interface UserState {
+    user: User;
+}
 
+// Define the initial state with type
+const initialState: UserState = {
+    user: {}
+};
+
+const userSlice = createSlice({
+    name: 'user',
+    initialState,
+    reducers: {
+        login: (state, action: PayloadAction<{ id: string; email: string }>) => {
+            const { id, email } = action.payload;
+            state.user = { id, email };
+            localStorage.setItem('user', JSON.stringify(state.user));
         },
-        logout: ()=>{
-            
+        logout: (state) => {
+            state.user = {};
+            localStorage.removeItem('user');
         }
     }
-})
+});
+
+export const { login, logout } = userSlice.actions;
+
+export default userSlice.reducer;

@@ -65,7 +65,7 @@ def login():
         preferences = cursor.fetchall()
         if not preferences:
             return jsonify({'message': 'Login successful', 'fillPreferences': True, 'userId': user_id}), 200
-        return jsonify({'message': 'Login successful', 'fillPreferences': False}), 200
+        return jsonify({'message': 'Login successful', 'fillPreferences': False,'userId': user_id}), 200
     return jsonify({'message': 'Incorrect password'}), 400
 
 

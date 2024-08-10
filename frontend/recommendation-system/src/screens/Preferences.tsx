@@ -92,7 +92,7 @@ const Preferences: React.FC = () => {
   };
 
   const handleFinish = () => {
-    navigate("/dashboard");
+    navigate("/home");
   };
 
   return (
